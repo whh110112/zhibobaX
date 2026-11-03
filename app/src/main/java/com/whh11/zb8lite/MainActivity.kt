@@ -20,6 +20,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        com.whh11.zb8lite.ui.ThemeManager.init(this)
         setContent {
             Zb8Theme {
                 var detail by remember { mutableStateOf<Pair<String, String>?>(null) }

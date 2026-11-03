@@ -1,5 +1,6 @@
 package com.whh11.zb8lite.ui
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -32,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -43,19 +48,39 @@ import com.whh11.zb8lite.data.Zb8Item
 
 @Composable
 fun CommunityTab(reload: Int, onOpen: (String, String) -> Unit) {
+    val context = LocalContext.current
+    val sp = remember { context.getSharedPreferences("zb8_community", Context.MODE_PRIVATE) }
+    
+    var favTeam by remember { mutableStateOf(sp.getString("fav_team", "lakers") ?: "lakers") }
+    var followedSet by remember { 
+        mutableStateOf(sp.getStringSet("followed", setOf("all", "lakers", "warriors", "realm", "china")) ?: setOf("all")) 
+    }
+
     val topics = Zb8Api.TOPICS
+    // 优先排在前面的圈子：我的主队 -> 已关注圈子 -> 其他圈子
+    val sortedTopics = remember(favTeam, followedSet) {
+        topics.sortedWith { a, b ->
+            when {
+                a.id == favTeam -> -2
+                b.id == favTeam -> 2
+                followedSet.contains(a.id) && !followedSet.contains(b.id) -> -1
+                !followedSet.contains(a.id) && followedSet.contains(b.id) -> 1
+                else -> 0
+            }
+        }
+    }
+
     var topicIndex by rememberSaveable { mutableIntStateOf(0) }
-    val currentTopic = topics[topicIndex]
+    val currentTopic = sortedTopics.getOrElse(topicIndex.coerceIn(0, sortedTopics.lastIndex)) { sortedTopics[0] }
 
     var items by remember { mutableStateOf<List<Zb8Item>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(topicIndex, reload) {
+    LaunchedEffect(currentTopic.id, reload) {
         loading = true
         error = null
         runCatching {
-            // 根据专区类别选择抓取源
             val channelUrl = when (currentTopic.category) {
                 "篮球" -> "https://m.zhibo8.com/nba/"
                 "足球" -> "https://m.zhibo8.com/zuqiu/"
@@ -69,7 +94,7 @@ fun CommunityTab(reload: Int, onOpen: (String, String) -> Unit) {
                 if (filtered.isNotEmpty()) filtered else raw
             }
         }.onSuccess { items = it }
-            .onFailure { error = it.message ?: "加载话题失败" }
+            .onFailure { error = it.message ?: "加载专区讨论失败" }
         loading = false
     }
 
@@ -79,20 +104,109 @@ fun CommunityTab(reload: Int, onOpen: (String, String) -> Unit) {
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
             horizontalArrangement = Arrangement.spacedBy(7.dp)
         ) {
-            itemsIndexed(topics.map { it.name }) { i, name ->
-                val active = i == topicIndex
+            itemsIndexed(sortedTopics) { i, topic ->
+                val active = topic.id == currentTopic.id
+                val isMyFav = topic.id == favTeam
                 Box(
                     Modifier
                         .clip(RoundedCornerShape(9.dp))
                         .background(if (active) Zb8Colors.Blue else Zb8Colors.Surface)
                         .clickable { topicIndex = i }
-                        .padding(horizontal = 13.dp, vertical = 6.dp)
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (isMyFav) {
+                            Icon(
+                                Icons.Rounded.Star,
+                                contentDescription = "主队",
+                                tint = if (active) Color(0xFFFFD700) else Color(0xFFFFB800),
+                                modifier = Modifier.size(13.dp)
+                            )
+                            Spacer(Modifier.width(3.dp))
+                        }
+                        Text(
+                            topic.name,
+                            color = if (active) Color.White else Zb8Colors.TextSecondary,
+                            fontSize = 12.5.sp,
+                            fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+                        )
+                    }
+                }
+            }
+        }
+
+        // 圈子信息条：关注与设为主队操作
+        if (currentTopic.id != "all") {
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Zb8Colors.Surface)
+                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    currentTopic.name,
+                    color = Zb8Colors.TextPrimary,
+                    fontSize = 13.5.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.width(6.dp))
+                if (currentTopic.id == favTeam) {
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(Color(0xFFFFB800).copy(alpha = 0.18f))
+                            .padding(horizontal = 5.dp, vertical = 2.dp)
+                    ) {
+                        Text("★ 我的主队", color = Color(0xFFFFB800), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                Spacer(Modifier.weight(1f))
+
+                // 设为主队
+                val isFav = currentTopic.id == favTeam
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isFav) Zb8Colors.SurfaceHigh else Zb8Colors.Blue.copy(alpha = 0.12f))
+                        .clickable {
+                            val newFav = if (isFav) "" else currentTopic.id
+                            favTeam = newFav
+                            sp.edit().putString("fav_team", newFav).apply()
+                        }
+                        .padding(horizontal = 9.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        name,
-                        color = if (active) Color.White else Zb8Colors.TextSecondary,
-                        fontSize = 12.5.sp,
-                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+                        if (isFav) "取消主队" else "设为主队",
+                        color = if (isFav) Zb8Colors.TextSecondary else Zb8Colors.Blue,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
+                Spacer(Modifier.width(8.dp))
+
+                // 关注圈子
+                val isFollowed = followedSet.contains(currentTopic.id)
+                Box(
+                    Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (isFollowed) Zb8Colors.SurfaceHigh else Zb8Colors.Blue)
+                        .clickable {
+                            val newSet = followedSet.toMutableSet()
+                            if (isFollowed) newSet.remove(currentTopic.id) else newSet.add(currentTopic.id)
+                            followedSet = newSet
+                            sp.edit().putStringSet("followed", newSet).apply()
+                        }
+                        .padding(horizontal = 9.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        if (isFollowed) "已关注" else "+ 关注",
+                        color = if (isFollowed) Zb8Colors.TextSecondary else Color.White,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
@@ -101,38 +215,24 @@ fun CommunityTab(reload: Int, onOpen: (String, String) -> Unit) {
         when {
             loading && items.isEmpty() -> LoadingBlock()
             error != null && items.isEmpty() -> ErrorBlock(error!!)
-            items.isEmpty() -> EmptyBlock("该专区暂时没有新讨论")
+            items.isEmpty() -> EmptyBlock("专区暂时没有讨论")
             else -> {
                 LazyColumn(
-                    contentPadding = PaddingValues(top = 4.dp, bottom = 28.dp),
+                    contentPadding = PaddingValues(bottom = 24.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    item {
-                        Row(
-                            Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                "🔥 吧友热议 · ${currentTopic.name}",
-                                color = Zb8Colors.TextPrimary,
-                                fontSize = 13.5.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(Modifier.weight(1f))
-                            Text("精选讨论流", color = Zb8Colors.TextTertiary, fontSize = 11.sp)
+                    itemsIndexed(items) { i, itm ->
+                        CommunityRow(itm) {
+                            val fullUrl = if (itm.url.startsWith("http")) itm.url else "https://m.zhibo8.com" + itm.url
+                            onOpen(fullUrl, itm.title)
                         }
-                    }
-                    itemsIndexed(items) { i, item ->
-                        CommunityRow(item) { onOpen(item.url, item.title) }
                         if (i != items.lastIndex) {
                             Box(
                                 Modifier
-                                    .padding(horizontal = 16.dp)
+                                    .padding(start = 16.dp, end = 16.dp)
                                     .height(1.dp)
                                     .fillMaxWidth()
-                                    .background(Zb8Colors.Line.copy(alpha = 0.4f))
+                                    .background(Zb8Colors.Line.copy(alpha = 0.5f))
                             )
                         }
                     }
@@ -143,7 +243,7 @@ fun CommunityTab(reload: Int, onOpen: (String, String) -> Unit) {
 }
 
 @Composable
-private fun CommunityRow(item: Zb8Item, onClick: () -> Unit) {
+private fun CommunityRow(itm: Zb8Item, onClick: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -153,61 +253,47 @@ private fun CommunityRow(item: Zb8Item, onClick: () -> Unit) {
     ) {
         Column(Modifier.weight(1f)) {
             Text(
-                item.title,
+                itm.title,
                 color = Zb8Colors.TextPrimary,
-                fontSize = 14.5.sp,
-                lineHeight = 20.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 21.sp
             )
-            Spacer(Modifier.height(8.dp))
+            Spacer(Modifier.height(7.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (item.tag.isNotBlank()) {
+                if (itm.tag.isNotBlank()) {
                     Box(
                         Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Zb8Colors.SurfaceHigh)
-                            .padding(horizontal = 5.dp, vertical = 1.5.dp)
+                            .clip(RoundedCornerShape(3.dp))
+                            .background(Zb8Colors.Blue.copy(alpha = 0.12f))
+                            .padding(horizontal = 4.dp, vertical = 1.dp)
                     ) {
-                        Text(
-                            item.tag.uppercase(),
-                            color = Zb8Colors.BlueSoft,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text(itm.tag, color = Zb8Colors.Blue, fontSize = 9.5.sp, fontWeight = FontWeight.Medium)
                     }
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(6.dp))
                 }
-                if (item.comments > 0) {
-                    Box(
-                        Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(Color(0xFFFF9800).copy(alpha = 0.15f))
-                            .padding(horizontal = 5.dp, vertical = 1.5.dp)
-                    ) {
-                        Text(
-                            "💬 ${item.comments}评",
-                            color = Color(0xFFFFB74D),
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                }
-                if (item.time.isNotBlank()) {
-                    Text(item.time, color = Zb8Colors.TextTertiary, fontSize = 11.sp)
+                Text(itm.time, color = Zb8Colors.TextTertiary, fontSize = 11.sp)
+                Spacer(Modifier.weight(1f))
+                if (itm.comments > 0) {
+                    Text(
+                        "${itm.comments} 讨论",
+                        color = Zb8Colors.TextSecondary,
+                        fontSize = 11.sp
+                    )
                 }
             }
         }
-        item.thumb?.let { url ->
-            Spacer(Modifier.width(11.dp))
+        if (itm.thumb != null) {
+            Spacer(Modifier.width(12.dp))
             AsyncImage(
-                model = url,
+                model = itm.thumb,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
-                    .size(width = 92.dp, height = 62.dp)
-                    .clip(RoundedCornerShape(8.dp))
+                    .size(width = 80.dp, height = 54.dp)
+                    .clip(RoundedCornerShape(6.dp))
                     .background(Zb8Colors.SurfaceHigh)
             )
         }
