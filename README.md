@@ -41,9 +41,9 @@
 - **联赛积分榜**：覆盖英超、西甲、意甲、德甲、法甲、中超、NBA（东西部排行/胜差/胜率）、CBA 及电竞积分榜；
 - **多榜单维度**：支持按积分榜、射手榜、助攻榜、得分榜深度查阅。
 
-### 4. 强力广告与应用横幅拦截引擎
-- 移动端文章详情内置高性能 CSS/JS 注入器，彻底屏蔽网页版顶部强制弹出的“打开直播吧 APP”浮动横幅、底部推荐栏与诱导下载弹窗；
-- 移除网页强制的 1.04rem 内间距，正文直接顶头显示，呈现真正的原生阅读美感。
+### 4. 强力广告与应用横幅拦截引擎（v2.5 性能升级）
+- 移动端文章详情内置高性能 CSS/JS 注入器，全面引入 `onPageCommitVisible` 极速预注入与 MutationObserver 动态守护，彻底屏蔽网页版顶部强制弹出的“打开直播吧 APP”浮动横幅、底部推荐栏与诱导下载弹窗；
+- 移除网页强制的冗余内间距，正文直接顶头显示，呈现真正的原生沉浸阅读美感。
 
 ### 5. 社区圈子与主队置顶
 - 聚集热门篮球圈、足球圈、豪门球队专区；
@@ -66,7 +66,7 @@
 
 ## 📦 APK 下载与安装
 
-- **最新正式发布包**：[Zb8Lite-v2.3.apk (GitHub Release 下载)](https://github.com/whh110112/zhibobaX/releases/download/v2.3/Zb8Lite-v2.3.apk)
+- **最新正式发布包**：[Zb8Lite-v2.5.apk (GitHub Release 下载)](https://github.com/whh110112/zhibobaX/releases/download/v2.5/Zb8Lite-v2.5.apk)
 - **全部版本发布页**：[GitHub Releases 列表](https://github.com/whh110112/zhibobaX/releases)
 - **最低兼容系统**：Android 8.0 (API Level 26) 及以上
 - **推荐目标系统**：Android 14 / 15 (API Level 34 / 35)

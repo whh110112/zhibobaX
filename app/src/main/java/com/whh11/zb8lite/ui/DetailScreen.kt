@@ -170,6 +170,10 @@ fun DetailScreen(url: String, title: String, onBack: () -> Unit) {
                                     v?.evaluateJavascript(Injector.script(isDark), null)
                                 }
 
+                                override fun onPageCommitVisible(v: WebView?, u: String?) {
+                                    v?.evaluateJavascript(Injector.script(isDark), null)
+                                }
+
                                 override fun onPageFinished(v: WebView?, u: String?) {
                                     progress = 100
                                     v?.evaluateJavascript(Injector.script(isDark), null)
@@ -187,7 +191,7 @@ fun DetailScreen(url: String, title: String, onBack: () -> Unit) {
                             webChromeClient = object : WebChromeClient() {
                                 override fun onProgressChanged(v: WebView?, newProgress: Int) {
                                     progress = newProgress
-                                    if (newProgress > 40) {
+                                    if (newProgress in 15..95) {
                                         v?.evaluateJavascript(Injector.script(isDark), null)
                                     }
                                 }
