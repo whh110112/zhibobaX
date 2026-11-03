@@ -12,8 +12,8 @@ android {
         applicationId = "com.whh11.zb8lite"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 23
+        versionName = "2.3"
     }
 
     buildFeatures {
