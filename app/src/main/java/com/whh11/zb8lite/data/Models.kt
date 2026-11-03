@@ -9,13 +9,14 @@ data class Zb8Item(
     val comments: Int = 0
 )
 
-/** 直播吧赛事条目：支持真实比分、焦点球员数据、进行中/完赛状态 */
+/** 直播吧赛事条目：支持多项目（足球/篮球/电竞/体坛综合）、真实比分、焦点球员数据、进行中/完赛状态 */
 data class Zb8Match(
     val id: String,
     val time: String,
     val date: String = "",
     val competition: String,
     val channel: String = "",
+    val type: String = "other", // football, basketball, game, other
     val teamA: String,
     val teamB: String,
     val logoA: String? = null,
@@ -51,14 +52,16 @@ data class Zb8Standing(
 )
 
 enum class LeagueType {
-    FOOTBALL, BASKETBALL
+    FOOTBALL, BASKETBALL, GAME, OTHER
 }
 
 data class Zb8League(
     val id: String,
     val name: String,
+    val category: String,
     val type: LeagueType,
-    val url: String
+    val url: String,
+    val description: String = ""
 )
 
 data class Zb8Channel(

@@ -49,6 +49,8 @@ object Zb8Colors {
     val ScoreRed = Color(0xFFE04E4C)
     val Live = Color(0xFF2EBD73)
 
+    val Primary: Color get() = Blue
+
     // 动态属性跟随当前主题
     val Bg: Color
         @Composable get() = if (LocalIsDark.current) Color(0xFF0B0E14) else Color(0xFFF4F6F9)
@@ -56,11 +58,17 @@ object Zb8Colors {
     val Surface: Color
         @Composable get() = if (LocalIsDark.current) Color(0xFF141922) else Color(0xFFFFFFFF)
 
+    val Card: Color
+        @Composable get() = Surface
+
     val SurfaceHigh: Color
         @Composable get() = if (LocalIsDark.current) Color(0xFF1C2330) else Color(0xFFEEF2F6)
 
     val Line: Color
         @Composable get() = if (LocalIsDark.current) Color(0xFF232B39) else Color(0xFFE2E8F0)
+
+    val Border: Color
+        @Composable get() = Line
 
     val TextPrimary: Color
         @Composable get() = if (LocalIsDark.current) Color(0xFFEDF1F7) else Color(0xFF1E293B)

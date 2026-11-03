@@ -2,7 +2,6 @@ package com.whh11.zb8lite.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,9 +17,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,15 +46,24 @@ import com.whh11.zb8lite.data.Zb8Standing
 
 @Composable
 fun DataTab(reload: Int) {
-    val leagues = Zb8Api.LEAGUES
-    var leagueIndex by rememberSaveable { mutableIntStateOf(0) }
-    val currentLeague = leagues[leagueIndex]
+    val categories = listOf("全部", "篮球", "欧洲足球", "亚洲足球", "美洲/非洲", "电竞与综合")
+    var selectedCategoryIndex by rememberSaveable { mutableIntStateOf(0) }
+    val selectedCategory = categories[selectedCategoryIndex]
+
+    val allLeagues = Zb8Api.LEAGUES
+    val filteredLeagues = remember(selectedCategoryIndex) {
+        if (selectedCategory == "全部") allLeagues
+        else allLeagues.filter { it.category == selectedCategory }
+    }
+
+    var selectedLeagueIndex by rememberSaveable { mutableIntStateOf(0) }
+    val currentLeague = filteredLeagues.getOrNull(selectedLeagueIndex) ?: filteredLeagues.firstOrNull() ?: allLeagues.first()
 
     var standings by remember { mutableStateOf<List<Zb8Standing>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(leagueIndex, reload) {
+    LaunchedEffect(currentLeague, reload) {
         loading = true
         error = null
         runCatching { Zb8Api.standings(currentLeague) }
@@ -65,232 +73,194 @@ fun DataTab(reload: Int) {
     }
 
     Column(Modifier.fillMaxSize()) {
-        // 联赛选择 Chip
+        // 1. 项目分类选择
         LazyRow(
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(7.dp)
+            Modifier
+                .fillMaxWidth()
+                .background(Zb8Colors.Card)
+                .padding(vertical = 6.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            itemsIndexed(leagues.map { it.name }) { i, name ->
-                val active = i == leagueIndex
+            itemsIndexed(categories) { index, cat ->
+                val active = index == selectedCategoryIndex
                 Box(
                     Modifier
-                        .clip(RoundedCornerShape(9.dp))
-                        .background(if (active) Zb8Colors.Blue else Zb8Colors.Surface)
-                        .clickable { leagueIndex = i }
-                        .padding(horizontal = 13.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(if (active) Zb8Colors.Primary else Zb8Colors.Border)
+                        .clickable {
+                            selectedCategoryIndex = index
+                            selectedLeagueIndex = 0
+                        }
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                 ) {
                     Text(
-                        name,
-                        color = if (active) Color.White else Zb8Colors.TextSecondary,
-                        fontSize = 12.5.sp,
-                        fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
+                        cat,
+                        color = if (active) Color.White else Zb8Colors.TextPrimary,
+                        fontSize = 12.sp,
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
                     )
                 }
             }
         }
 
-        when {
-            loading && standings.isEmpty() -> LoadingBlock()
-            error != null && standings.isEmpty() -> ErrorBlock(error!!)
-            standings.isEmpty() -> EmptyBlock("暂无该联赛榜单数据")
-            else -> {
-                if (currentLeague.type == LeagueType.BASKETBALL) {
-                    BasketballStandingsView(standings)
-                } else {
-                    FootballStandingsView(standings)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FootballStandingsView(items: List<Zb8Standing>) {
-    val scrollState = rememberScrollState()
-
-    Column(Modifier.fillMaxSize()) {
-        // 固定表头
-        Row(
+        // 2. 二级联赛选择
+        LazyRow(
             Modifier
                 .fillMaxWidth()
-                .background(Zb8Colors.SurfaceHigh)
-                .padding(horizontal = 14.dp, vertical = 8.dp)
-                .horizontalScroll(scrollState),
-            verticalAlignment = Alignment.CenterVertically
+                .background(Zb8Colors.Bg)
+                .padding(vertical = 5.dp),
+            contentPadding = PaddingValues(horizontal = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("#", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(26.dp), textAlign = TextAlign.Center)
-            Text("球队", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(130.dp))
-            Text("场次", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(38.dp), textAlign = TextAlign.Center)
-            Text("胜/平/负", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(60.dp), textAlign = TextAlign.Center)
-            Text("净胜", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(42.dp), textAlign = TextAlign.Center)
-            Text("积分", color = Zb8Colors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(42.dp), textAlign = TextAlign.Center)
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 28.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            items(items.size) { i ->
-                val item = items[i]
-                Row(
+            itemsIndexed(filteredLeagues) { index, league ->
+                val active = league.id == currentLeague.id
+                Box(
                     Modifier
-                        .fillMaxWidth()
-                        .background(if (i % 2 == 0) Zb8Colors.Bg else Zb8Colors.Surface.copy(alpha = 0.4f))
-                        .padding(horizontal = 14.dp, vertical = 9.dp)
-                        .horizontalScroll(scrollState),
-                    verticalAlignment = Alignment.CenterVertically
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(if (active) Zb8Colors.Primary.copy(alpha = 0.15f) else Zb8Colors.Card)
+                        .clickable { selectedLeagueIndex = index }
+                        .padding(horizontal = 12.dp, vertical = 5.dp)
                 ) {
-                    // 排名标号
-                    val rankColor = when (item.rank) {
-                        1 -> Color(0xFFFFD700)
-                        2 -> Color(0xFFC0C0C0)
-                        3 -> Color(0xFFCD7F32)
-                        else -> Zb8Colors.TextTertiary
-                    }
                     Text(
-                        "${item.rank}",
-                        color = rankColor,
+                        league.name,
+                        color = if (active) Zb8Colors.Primary else Zb8Colors.TextPrimary,
                         fontSize = 12.sp,
-                        fontWeight = if (item.rank <= 3) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.width(26.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    // 球队名与队徽
-                    Row(
-                        Modifier.width(130.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (item.teamLogo != null) {
-                            AsyncImage(
-                                model = item.teamLogo,
-                                contentDescription = null,
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier.size(19.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(7.dp))
-                        Text(
-                            item.teamName,
-                            color = Zb8Colors.TextPrimary,
-                            fontSize = 12.5.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-
-                    Text(item.played, color = Zb8Colors.TextSecondary, fontSize = 12.sp, modifier = Modifier.width(38.dp), textAlign = TextAlign.Center)
-                    Text("${item.won}/${item.drawn}/${item.lost}", color = Zb8Colors.TextSecondary, fontSize = 12.sp, modifier = Modifier.width(60.dp), textAlign = TextAlign.Center)
-                    Text(item.goalsDiff, color = Zb8Colors.TextSecondary, fontSize = 12.sp, modifier = Modifier.width(42.dp), textAlign = TextAlign.Center)
-                    Text(
-                        item.points,
-                        color = Zb8Colors.Blue,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(42.dp),
-                        textAlign = TextAlign.Center
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.Normal
                     )
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun BasketballStandingsView(items: List<Zb8Standing>) {
-    val scrollState = rememberScrollState()
-
-    Column(Modifier.fillMaxSize()) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .background(Zb8Colors.SurfaceHigh)
-                .padding(horizontal = 14.dp, vertical = 8.dp)
-                .horizontalScroll(scrollState),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("#", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(26.dp), textAlign = TextAlign.Center)
-            Text("球队", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(115.dp))
-            Text("胜/负", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(52.dp), textAlign = TextAlign.Center)
-            Text("胜率", color = Zb8Colors.TextPrimary, fontSize = 11.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(52.dp), textAlign = TextAlign.Center)
-            Text("胜差", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(42.dp), textAlign = TextAlign.Center)
-            Text("近况", color = Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(48.dp), textAlign = TextAlign.Center)
-        }
-
-        LazyColumn(
-            contentPadding = PaddingValues(bottom = 28.dp),
-            modifier = Modifier.fillMaxSize()
-        ) {
-            var lastGroup = ""
-            items(items.size) { i ->
-                val item = items[i]
-                if (item.groupTitle.isNotBlank() && item.groupTitle != lastGroup) {
-                    lastGroup = item.groupTitle
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .background(Zb8Colors.Surface)
-                            .padding(horizontal = 14.dp, vertical = 5.dp)
-                    ) {
-                        Text(
-                            item.groupTitle,
-                            color = Zb8Colors.BlueSoft,
-                            fontSize = 11.5.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+        Box(Modifier.fillMaxSize()) {
+            when {
+                loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator(color = Zb8Colors.Primary, modifier = Modifier.size(32.dp))
                     }
                 }
-
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .background(if (i % 2 == 0) Zb8Colors.Bg else Zb8Colors.Surface.copy(alpha = 0.4f))
-                        .padding(horizontal = 14.dp, vertical = 9.dp)
-                        .horizontalScroll(scrollState),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        "${item.rank}",
-                        color = if (item.rank <= 8) Zb8Colors.TextPrimary else Zb8Colors.TextTertiary,
-                        fontSize = 12.sp,
-                        fontWeight = if (item.rank <= 8) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.width(26.dp),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Row(
-                        Modifier.width(115.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (item.teamLogo != null) {
-                            AsyncImage(
-                                model = item.teamLogo,
-                                contentDescription = null,
-                                contentScale = ContentScale.Fit,
-                                modifier = Modifier.size(19.dp)
-                            )
-                        }
-                        Spacer(Modifier.width(7.dp))
-                        Text(
-                            item.teamName,
-                            color = Zb8Colors.TextPrimary,
-                            fontSize = 12.5.sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                error != null && standings.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text(error ?: "网络加载失败", color = Zb8Colors.TextSecondary, fontSize = 14.sp)
                     }
+                }
+                standings.isEmpty() -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Text("暂无 ${currentLeague.name} 排名数据", color = Zb8Colors.TextSecondary, fontSize = 14.sp)
+                    }
+                }
+                else -> {
+                    val isBasketball = currentLeague.type == LeagueType.BASKETBALL
+                    val grouped = standings.groupBy { it.groupTitle }
 
-                    Text("${item.won}/${item.lost}", color = Zb8Colors.TextSecondary, fontSize = 12.sp, modifier = Modifier.width(52.dp), textAlign = TextAlign.Center)
-                    Text(
-                        item.winRate,
-                        color = Zb8Colors.Blue,
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.width(52.dp),
-                        textAlign = TextAlign.Center
-                    )
-                    Text(item.gamesBehind, color = Zb8Colors.TextSecondary, fontSize = 12.sp, modifier = Modifier.width(42.dp), textAlign = TextAlign.Center)
-                    Text(item.streak, color = if (item.streak.contains("胜")) Color(0xFFE53935) else Zb8Colors.TextTertiary, fontSize = 11.sp, modifier = Modifier.width(48.dp), textAlign = TextAlign.Center)
+                    LazyColumn(
+                        Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        grouped.forEach { (groupTitle, list) ->
+                            if (groupTitle.isNotBlank()) {
+                                item(key = "g_$groupTitle") {
+                                    Box(
+                                        Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 6.dp)
+                                    ) {
+                                        Text(
+                                            groupTitle,
+                                            color = Zb8Colors.Primary,
+                                            fontSize = 13.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                            // 表头
+                            item(key = "header_$groupTitle") {
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .background(Zb8Colors.Card)
+                                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text("#", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(24.dp), textAlign = TextAlign.Center)
+                                    Text("球队", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.weight(1f))
+                                    if (isBasketball) {
+                                        Text("胜/负", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(55.dp), textAlign = TextAlign.Center)
+                                        Text("胜率", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(50.dp), textAlign = TextAlign.Center)
+                                        Text("胜差", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(40.dp), textAlign = TextAlign.Center)
+                                    } else {
+                                        Text("赛", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(28.dp), textAlign = TextAlign.Center)
+                                        Text("胜/平/负", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(62.dp), textAlign = TextAlign.Center)
+                                        Text("净", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(32.dp), textAlign = TextAlign.Center)
+                                        Text("分", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(32.dp), textAlign = TextAlign.Center)
+                                    }
+                                }
+                            }
+
+                            itemsIndexed(list, key = { index, item -> "${groupTitle}_${item.rank}_${item.teamName}_$index" }) { _, row ->
+                                val rankColor = when (row.rank) {
+                                    1 -> Color(0xFFE53935)
+                                    2 -> Color(0xFFFF9800)
+                                    3 -> Color(0xFFFBC02D)
+                                    in 4..6 -> Zb8Colors.Primary
+                                    else -> Zb8Colors.TextSecondary
+                                }
+
+                                Row(
+                                    Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 1.dp)
+                                        .background(Zb8Colors.Card)
+                                        .padding(horizontal = 10.dp, vertical = 7.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        row.rank.toString(),
+                                        color = rankColor,
+                                        fontSize = 12.sp,
+                                        fontWeight = if (row.rank <= 3) FontWeight.Bold else FontWeight.Normal,
+                                        modifier = Modifier.width(24.dp),
+                                        textAlign = TextAlign.Center
+                                    )
+
+                                    Row(
+                                        Modifier.weight(1f),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        if (!row.teamLogo.isNullOrBlank()) {
+                                            AsyncImage(
+                                                model = row.teamLogo,
+                                                contentDescription = null,
+                                                contentScale = ContentScale.Fit,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                            Spacer(Modifier.width(6.dp))
+                                        }
+                                        Text(
+                                            row.teamName,
+                                            color = Zb8Colors.TextPrimary,
+                                            fontSize = 12.sp,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
+                                    if (isBasketball) {
+                                        Text("${row.won}/${row.lost}", color = Zb8Colors.TextPrimary, fontSize = 11.sp, modifier = Modifier.width(55.dp), textAlign = TextAlign.Center)
+                                        Text(row.winRate.ifBlank { row.points }, color = Zb8Colors.TextPrimary, fontSize = 11.sp, modifier = Modifier.width(50.dp), textAlign = TextAlign.Center)
+                                        Text(row.gamesBehind.ifBlank { "-" }, color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(40.dp), textAlign = TextAlign.Center)
+                                    } else {
+                                        Text(row.played, color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(28.dp), textAlign = TextAlign.Center)
+                                        Text("${row.won}/${row.drawn}/${row.lost}", color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(62.dp), textAlign = TextAlign.Center)
+                                        Text(row.goalsDiff, color = Zb8Colors.TextSecondary, fontSize = 11.sp, modifier = Modifier.width(32.dp), textAlign = TextAlign.Center)
+                                        Text(row.points, color = Zb8Colors.Primary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.width(32.dp), textAlign = TextAlign.Center)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

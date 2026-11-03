@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import android.widget.Toast
@@ -97,8 +98,8 @@ fun BrandHeader(onReload: () -> Unit) {
             contentDescription = "直播吧",
             contentScale = ContentScale.Fit,
             modifier = Modifier
-                .size(30.dp)
-                .clip(RoundedCornerShape(8.dp))
+                .size(32.dp)
+                .clip(CircleShape)
         )
         Spacer(Modifier.width(10.dp))
         Text(
