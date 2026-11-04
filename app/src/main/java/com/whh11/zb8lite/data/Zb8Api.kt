@@ -47,16 +47,16 @@ object Zb8Api {
         Zb8League("cba", "CBA", "篮球", LeagueType.BASKETBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E6%8E%92%E8%A1%8C&tab=%E6%8E%92%E8%A1%8C&league_id=925&league=CBA", "CBA 常规赛排行榜"),
 
         // 2. 欧洲足球
-        Zb8League("epl", "英超", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=24&league=%E8%8B%B1%E8%B6%85"),
-        Zb8League("laliga", "西甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=25&league=%E8%A5%BF%E7%94%B2"),
-        Zb8League("seriea", "意甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=26&league=%E6%84%8F%E7%94%B2"),
-        Zb8League("bundesliga", "德甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=27&league=%E5%BE%B7%E7%94%B2"),
-        Zb8League("ligue1", "法甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=28&league=%E6%B3%95%E7%94%B2"),
-        Zb8League("ucl", "欧冠", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=371&league=%E6%AC%A7%E6%B4%B2%E5%86%A0%E5%86%9B%E8%81%94%E8%B5%9B"),
+        Zb8League("epl", "英超", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=24&league=%E8%8B%B1%E8%B6%85", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=24&league=%E8%8B%B1%E8%B6%85"),
+        Zb8League("laliga", "西甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=25&league=%E8%A5%BF%E7%94%B2", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=25&league=%E8%A5%BF%E7%94%B2"),
+        Zb8League("seriea", "意甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=26&league=%E6%84%8F%E7%94%B2", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=26&league=%E6%84%8F%E7%94%B2"),
+        Zb8League("bundesliga", "德甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=27&league=%E5%BE%B7%E7%94%B2", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=27&league=%E5%BE%B7%E7%94%B2"),
+        Zb8League("ligue1", "法甲", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=28&league=%E6%B3%95%E7%94%B2", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=28&league=%E6%B3%95%E7%94%B2"),
+        Zb8League("ucl", "欧冠", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=371&league=%E6%AC%A7%E6%B4%B2%E5%86%A0%E5%86%9B%E8%81%94%E8%B5%9B", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=371&league=%E6%AC%A7%E6%B4%B2%E5%86%A0%E5%86%9B%E8%81%94%E8%B5%9B"),
         Zb8League("uel", "欧联杯", "欧洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=14&league=%E6%AC%A7%E8%81%94%E6%9D%AF"),
 
         // 3. 亚洲足球
-        Zb8League("csl", "中超", "亚洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=1&league=%E4%B8%AD%E8%B6%85"),
+        Zb8League("csl", "中超", "亚洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=1&league=%E4%B8%AD%E8%B6%85", "", "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E8%BF%9B%E7%90%83&tab=%E7%90%83%E5%91%98%E6%A6%9C&league_id=1&league=%E4%B8%AD%E8%B6%85"),
         Zb8League("acl", "亚冠精英", "亚洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=226&league=%E4%BA%9A%E5%86%A0%E7%B2%BE%E8%8B%B1"),
         Zb8League("saudi", "沙特联", "亚洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=318&league=%E6%B2%99%E7%89%B9%E8%B6%85"),
         Zb8League("cl1", "中甲", "亚洲足球", LeagueType.FOOTBALL, "https://stats.qiumibao.com/shuju/public/index.php?_url=/data/index&year=&type=%E7%A7%AF%E5%88%86%E6%A6%9C&tab=%E7%A7%AF%E5%88%86%E6%A6%9C&league_id=129&league=%E4%B8%AD%E7%94%B2"),
@@ -216,8 +216,44 @@ object Zb8Api {
             goalsDiff = o.optString("净胜球"),
             points = o.optString("积分"),
             tag = o.optString("标签"),
-            groupTitle = groupTitle
+            groupTitle = groupTitle,
+            teamId = o.optString("teamId").ifBlank { o.optString("球队id") }
         )
+    }
+
+    /**
+     * 球员榜（射手榜 / 助攻榜）。
+     * 数据源同积分榜，字段：排名 / playerId / teamId / 球队 / 球员 / 球员图标 / 球队图标 / 进球|助攻 / 点球
+     */
+    suspend fun players(url: String): List<Zb8Player> = withContext(Dispatchers.IO) {
+        if (url.isBlank()) return@withContext emptyList()
+        val jsonStr = fetch(url)
+        val root = runCatching { JSONObject(jsonStr) }.getOrNull() ?: return@withContext emptyList()
+        val arr = root.optJSONArray("data") ?: return@withContext emptyList()
+        val out = ArrayList<Zb8Player>(arr.length())
+
+        for (i in 0 until arr.length()) {
+            val o = arr.optJSONObject(i) ?: continue
+            val name = o.optString("球员").ifBlank { o.optString("球员名称") }.trim()
+            if (name.isBlank()) continue
+            out.add(
+                Zb8Player(
+                    rank = o.optString("排名").toIntOrNull() ?: (i + 1),
+                    playerName = name,
+                    // 实测字段名是「球员图标」
+                    playerLogo = normalizeUrl(
+                        o.optString("球员图标").ifBlank { o.optString("球员头像") }
+                    ),
+                    teamName = o.optString("球队").ifBlank { o.optString("球队名称") }.trim(),
+                    teamLogo = normalizeUrl(o.optString("球队图标")),
+                    count = o.optString("进球", o.optString("助攻", o.optString("数值"))),
+                    subCount = o.optString("点球").takeIf { it.isNotBlank() }?.let { "点球 $it" } ?: "",
+                    playerId = o.optString("playerId").ifBlank { o.optString("球员id") },
+                    teamId = o.optString("teamId").ifBlank { o.optString("球队id") }
+                )
+            )
+        }
+        out
     }
 
     private fun parseRecordJson(json: String, date: String): List<Zb8Match> {

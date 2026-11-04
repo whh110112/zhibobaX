@@ -74,7 +74,7 @@ fun HomeScreen(onOpen: (url: String, title: String) -> Unit) {
             when (tab) {
                 0 -> NewsTab(reload = reload, onOpen = onOpen)
                 1 -> MatchTab(reload = reload, onOpen = onOpen)
-                2 -> DataTab(reload = reload)
+                2 -> DataTab(reload = reload, onOpen = onOpen)
                 else -> CommunityTab(reload = reload, onOpen = onOpen)
             }
         }
@@ -109,14 +109,23 @@ fun BrandHeader(onReload: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             letterSpacing = (-0.3).sp
         )
-        Spacer(Modifier.width(7.dp))
-        Box(
-            Modifier
-                .clip(RoundedCornerShape(5.dp))
-                .background(Zb8Colors.Live.copy(alpha = 0.15f))
-                .padding(horizontal = 5.dp, vertical = 2.dp)
-        ) {
-            Text("LITE", color = Zb8Colors.Live, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.width(9.dp))
+        // 直播吧的标志性元素：实时播报红点，和懂球帝的静态徽章区分开
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                Modifier
+                    .size(6.dp)
+                    .clip(CircleShape)
+                    .background(Zb8Colors.ScoreRed)
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "LIVE",
+                color = Zb8Colors.ScoreRed,
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 0.8.sp
+            )
         }
         Spacer(Modifier.weight(1f))
 
@@ -154,29 +163,35 @@ fun BrandHeader(onReload: () -> Unit) {
     }
 }
 
+/**
+ * 直播吧的导航：等宽胶囊分段器。
+ * 刻意与懂球帝的下划线式导航区分开 —— 直播吧原版是"频道按钮"的信息量密集风格。
+ */
 @Composable
 fun SegmentTabs(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
-    Row(Modifier.padding(start = 16.dp, top = 4.dp, bottom = 2.dp)) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .background(Zb8Colors.Bg)
+            .padding(horizontal = 12.dp, vertical = 7.dp),
+        horizontalArrangement = Arrangement.spacedBy(5.dp)
+    ) {
         labels.forEachIndexed { i, label ->
             val active = i == selected
-            Column(
+            Box(
                 Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(7.dp))
+                    .background(if (active) Zb8Colors.Primary else Zb8Colors.Card)
                     .clickable { onSelect(i) }
-                    .padding(end = 22.dp, top = 4.dp, bottom = 4.dp)
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     label,
-                    color = if (active) Zb8Colors.TextPrimary else Zb8Colors.TextTertiary,
-                    fontSize = 16.sp,
-                    fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal
-                )
-                Spacer(Modifier.height(5.dp))
-                Box(
-                    Modifier
-                        .width(if (active) 20.dp else 0.dp)
-                        .height(3.dp)
-                        .clip(RoundedCornerShape(2.dp))
-                        .background(Zb8Colors.Blue)
+                    color = if (active) Color.White else Zb8Colors.TextSecondary,
+                    fontSize = 13.sp,
+                    fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
                 )
             }
         }

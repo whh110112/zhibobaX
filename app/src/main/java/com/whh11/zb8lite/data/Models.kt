@@ -48,7 +48,22 @@ data class Zb8Standing(
     val winRate: String = "",
     val streak: String = "",
     val gamesBehind: String = "",
-    val groupTitle: String = ""
+    val groupTitle: String = "",
+    /** 球队 id（球迷宝体系），用于球队详情页 */
+    val teamId: String = ""
+)
+
+/** 球员榜条目（射手榜 / 助攻榜） */
+data class Zb8Player(
+    val rank: Int,
+    val playerName: String,
+    val playerLogo: String? = null,
+    val teamName: String = "",
+    val teamLogo: String? = null,
+    val count: String = "",
+    val subCount: String = "",
+    val playerId: String = "",
+    val teamId: String = ""
 )
 
 enum class LeagueType {
@@ -61,7 +76,9 @@ data class Zb8League(
     val category: String,
     val type: LeagueType,
     val url: String,
-    val description: String = ""
+    val description: String = "",
+    /** 射手榜地址，为空表示该赛事没有球员榜 */
+    val scorersUrl: String = ""
 )
 
 data class Zb8Channel(
