@@ -1,6 +1,5 @@
 package com.whh11.zb8lite.ui
 
-import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -8,134 +7,144 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.sp
+import com.whh11.zb8lite.data.LocalStore
+import com.whh11.zb8lite.data.ThemeMode
 
-enum class ThemeMode(val label: String) {
-    SYSTEM("跟随系统"),
-    LIGHT("白天模式"),
-    DARK("夜间模式")
-}
+val LocalIsDark = compositionLocalOf { false }
+val LocalIsAmoled = compositionLocalOf { false }
 
-object ThemeManager {
-    var mode by mutableStateOf(ThemeMode.SYSTEM)
-        private set
-
-    fun init(context: Context) {
-        val sp = context.getSharedPreferences("zb8_pref", Context.MODE_PRIVATE)
-        val saved = sp.getString("theme_mode", ThemeMode.SYSTEM.name) ?: ThemeMode.SYSTEM.name
-        mode = runCatching { ThemeMode.valueOf(saved) }.getOrDefault(ThemeMode.SYSTEM)
-    }
-
-    fun set(context: Context, newMode: ThemeMode) {
-        mode = newMode
-        val sp = context.getSharedPreferences("zb8_pref", Context.MODE_PRIVATE)
-        sp.edit().putString("theme_mode", newMode.name).apply()
-    }
-}
-
-val LocalIsDark = compositionLocalOf { true }
-
+/**
+ * 直播吧原味视觉语义 Token：
+ * 清爽直播蓝（#1E88E5）+ 直播翡翠绿（#10B981）+ 神评火焰橙红（#FF5722）
+ * 白底为主场，深色中性暗岩灰，独立 AMOLED 纯黑模式。
+ */
 object Zb8Colors {
-    val Blue = Color(0xFF0084FF)
-    val BlueDeep = Color(0xFF0066CC)
-    val BlueSoft = Color(0xFF4DA8FF)
-    val ScoreRed = Color(0xFFE04E4C)
-    val Live = Color(0xFF2EBD73)
+    val BrandBlue = Color(0xFF1E88E5)
+    val BrandBlueDark = Color(0xFF3B9EFF)
+    val LiveGreen = Color(0xFF10B981)
+    val HotOrange = Color(0xFFFF5722)
+    val Red = Color(0xFFE53935)
+    val Amber = Color(0xFFF59E0B)
 
-    val Primary: Color get() = Blue
+    val Primary: Color
+        @Composable get() = if (LocalIsDark.current) BrandBlueDark else BrandBlue
 
-    // 动态属性跟随当前主题
+    val PrimaryContainer: Color
+        @Composable get() = if (LocalIsDark.current) Color(0xFF13253A) else Color(0xFFE8F3FE)
+
     val Bg: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF0B0E14) else Color(0xFFF4F6F9)
-
-    val Surface: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF141922) else Color(0xFFFFFFFF)
+        @Composable get() = when {
+            LocalIsDark.current && LocalIsAmoled.current -> Color(0xFF000000)
+            LocalIsDark.current -> Color(0xFF101216)
+            else -> Color(0xFFF4F5F7)
+        }
 
     val Card: Color
-        @Composable get() = Surface
+        @Composable get() = when {
+            LocalIsDark.current && LocalIsAmoled.current -> Color(0xFF000000)
+            LocalIsDark.current -> Color(0xFF181B22)
+            else -> Color(0xFFFFFFFF)
+        }
 
     val SurfaceHigh: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF1C2330) else Color(0xFFEEF2F6)
+        @Composable get() = when {
+            LocalIsDark.current && LocalIsAmoled.current -> Color(0xFF141414)
+            LocalIsDark.current -> Color(0xFF222732)
+            else -> Color(0xFFEEF1F5)
+        }
 
-    val Line: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF232B39) else Color(0xFFE2E8F0)
-
-    val Border: Color
-        @Composable get() = Line
+    val Divider: Color
+        @Composable get() = when {
+            LocalIsDark.current && LocalIsAmoled.current -> Color(0xFF1C1C1C)
+            LocalIsDark.current -> Color(0xFF262B36)
+            else -> Color(0xFFE6E9EF)
+        }
 
     val TextPrimary: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFFEDF1F7) else Color(0xFF1E293B)
+        @Composable get() = if (LocalIsDark.current) Color(0xFFEDF1F7) else Color(0xFF181C24)
 
     val TextSecondary: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF8A94A6) else Color(0xFF64748B)
+        @Composable get() = if (LocalIsDark.current) Color(0xFF939DAE) else Color(0xFF64748B)
 
     val TextTertiary: Color
-        @Composable get() = if (LocalIsDark.current) Color(0xFF5B6577) else Color(0xFF94A3B8)
+        @Composable get() = if (LocalIsDark.current) Color(0xFF646E80) else Color(0xFF94A3B8)
 }
 
-private val DarkScheme = darkColorScheme(
-    primary = Zb8Colors.Blue,
+private val LightScheme = lightColorScheme(
+    primary = Zb8Colors.BrandBlue,
     onPrimary = Color.White,
-    primaryContainer = Zb8Colors.BlueDeep,
-    onPrimaryContainer = Color(0xFFD3E9FF),
-    secondary = Zb8Colors.ScoreRed,
-    onSecondary = Color.White,
-    tertiary = Zb8Colors.Live,
-    background = Color(0xFF0B0E14),
-    onBackground = Color(0xFFEDF1F7),
-    surface = Color(0xFF141922),
-    onSurface = Color(0xFFEDF1F7),
-    surfaceVariant = Color(0xFF1C2330),
-    onSurfaceVariant = Color(0xFF8A94A6),
-    outline = Color(0xFF232B39),
-    error = Color(0xFFE5484D)
+    background = Color(0xFFF4F5F7),
+    onBackground = Color(0xFF181C24),
+    surface = Color.White,
+    onSurface = Color(0xFF181C24),
+    surfaceVariant = Color(0xFFEEF1F5),
+    onSurfaceVariant = Color(0xFF64748B),
+    outline = Color(0xFFE6E9EF),
+    error = Zb8Colors.Red
 )
 
-private val LightScheme = lightColorScheme(
-    primary = Zb8Colors.Blue,
+private val DarkScheme = darkColorScheme(
+    primary = Zb8Colors.BrandBlueDark,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFE0EFFF),
-    onPrimaryContainer = Zb8Colors.BlueDeep,
-    secondary = Zb8Colors.ScoreRed,
-    onSecondary = Color.White,
-    tertiary = Zb8Colors.Live,
-    background = Color(0xFFF4F6F9),
-    onBackground = Color(0xFF1E293B),
-    surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF1E293B),
-    surfaceVariant = Color(0xFFEEF2F6),
-    onSurfaceVariant = Color(0xFF64748B),
-    outline = Color(0xFFE2E8F0),
-    error = Color(0xFFE5484D)
+    background = Color(0xFF101216),
+    onBackground = Color(0xFFEDF1F7),
+    surface = Color(0xFF181B22),
+    onSurface = Color(0xFFEDF1F7),
+    surfaceVariant = Color(0xFF222732),
+    onSurfaceVariant = Color(0xFF939DAE),
+    outline = Color(0xFF262B36),
+    error = Color(0xFFF87171)
+)
+
+private val AmoledScheme = DarkScheme.copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color(0xFF141414),
+    outline = Color(0xFF1C1C1C)
 )
 
 private val Zb8Type = Typography(
     titleLarge = TextStyle(fontSize = 20.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.3).sp),
     titleMedium = TextStyle(fontSize = 15.5.sp, fontWeight = FontWeight.SemiBold),
-    bodyLarge = TextStyle(fontSize = 15.sp, lineHeight = 22.sp),
-    bodyMedium = TextStyle(fontSize = 13.5.sp, lineHeight = 19.sp),
-    labelSmall = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.3.sp)
+    bodyLarge = TextStyle(fontSize = 15.5.sp, lineHeight = 25.sp),
+    bodyMedium = TextStyle(fontSize = 14.sp, lineHeight = 21.sp),
+    labelSmall = TextStyle(fontSize = 11.sp, fontWeight = FontWeight.Medium)
 )
 
 @Composable
 fun Zb8Theme(content: @Composable () -> Unit) {
+    val mode by LocalStore.themeMode.collectAsState()
+    val amoled by LocalStore.amoled.collectAsState()
+    val fontScale by LocalStore.fontScale.collectAsState()
     val systemDark = isSystemInDarkTheme()
-    val isDark = when (ThemeManager.mode) {
+
+    val isDark = when (mode) {
         ThemeMode.SYSTEM -> systemDark
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
     }
 
-    val scheme = if (isDark) DarkScheme else LightScheme
+    val scheme = when {
+        !isDark -> LightScheme
+        amoled -> AmoledScheme
+        else -> DarkScheme
+    }
 
-    CompositionLocalProvider(LocalIsDark provides isDark) {
+    val baseDensity = LocalDensity.current
+    CompositionLocalProvider(
+        LocalIsDark provides isDark,
+        LocalIsAmoled provides (isDark && amoled),
+        LocalDensity provides Density(baseDensity.density, baseDensity.fontScale * fontScale)
+    ) {
         MaterialTheme(colorScheme = scheme, typography = Zb8Type, content = content)
     }
 }

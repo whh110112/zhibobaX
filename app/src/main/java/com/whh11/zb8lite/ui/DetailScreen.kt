@@ -82,7 +82,7 @@ fun DetailScreen(url: String, title: String, onBack: () -> Unit) {
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .background(Zb8Colors.Surface)
+                    .background(Zb8Colors.Card)
                     .statusBarsPadding()
                     .padding(start = 4.dp, end = 6.dp, top = 4.dp, bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -129,7 +129,7 @@ fun DetailScreen(url: String, title: String, onBack: () -> Unit) {
             if (progress in 1..99) {
                 LinearProgressIndicator(
                     progress = { progress / 100f },
-                    color = Zb8Colors.Blue,
+                    color = Zb8Colors.Primary,
                     trackColor = Zb8Colors.SurfaceHigh,
                     modifier = Modifier
                         .fillMaxWidth()
